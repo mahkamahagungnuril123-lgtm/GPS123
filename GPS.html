@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Mock Location Simulator (v2)</title>
+    
+    <!-- 1. Import Library Peta Leaflet.js -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- 2. Import Font dari Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- 3. KODE CSS DISINI -->
+    <style>
+        /* Import Font */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        /* Animasi Keyframes */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 128, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 128, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 128, 0); }
+        }
+        @keyframes pulse-blue {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 113, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(82, 113, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 113, 255, 0); }
+        }
+
+        /* Styling Dasar */
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-light: #16213e;
+            --primary: #0f3460;
+            --secondary: #533483;
+            --accent: #e94560;
+            --text: #f0f0f0;
+            --green-live: #00ff80;
+            --blue-mock: #5271ff;
+            --red-off: #ff5252;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            width: 95%;
+            max-width: 1000px;
+            background-color: var(--bg-light);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+        }
+        #map {
+            height: 45vh; /* Sedikit lebih kecil untuk memberi ruang fitur baru */
+            min-height: 300px;
+            width: 100%;
+            border-bottom: 3px solid var(--primary);
+        }
+        .control-panel {
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .header h2 { margin: 0; color: var(--accent); }
+        .status { display: flex; align-items: center; font-weight: bold; }
+        .status-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            margin-right: 8px; transition: background-color 0.3s ease;
+        }
+        .status-dot.offline { background-color: var(--red-off); animation: pulse 2s infinite; }
+        .status-dot.live { background-color: var(--green-live); animation: pulse-green 2s infinite; }
+        .status-dot.mock { background-color: var(--blue-mock); animation: pulse-blue 2s infinite; }
+
+        /* Tombol */
+        .button-group { display: flex; flex-wrap: wrap; gap: 15px; }
+        .btn {
+            flex: 1; min-width: 150px; padding: 12px 15px;
+            border: none; border-radius: 8px; font-size: 16px;
+            font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn .icon { font-size: 1.2em; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+        .btn:active { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-secondary { background-color: var(--primary); color: var(--text); }
+        .btn-green { background-color: var(--green-live); color: var(--bg-dark); }
+        .btn:disabled {
+            background-color: #555; color: #999;
+            cursor: not-allowed; transform: none; box-shadow: none;
+        }
+
+        /* Input */
+        .input-group {
+            display: flex; gap: 10px; margin-bottom: 15px;
+        }
+        .input-field {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        /* Bagian Mock & Manual */
+        .manual-section, .mock-section { margin-top: 15px; }
+        .dropdown {
+            width: 100%; padding: 10px; background-color: var(--bg-dark);
+            color: var(--text); border: 1px solid var(--primary);
+            border-radius: 8px; font-size: 16px; margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        .dropdown:disabled { background-color: #555; color: #999; }
+
+        .toggle-container {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--bg-dark); padding: 15px; border-radius: 8px;
+        }
+        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 26px; width: 26px;
+            left: 4px; bottom: 4px; background-color: white;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--blue-mock); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-light); padding: 25px; border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); width: 90%; max-width: 400px;
+            transform: scale(0.9); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-overlay.show .modal-content { transform: scale(1); opacity: 1; }
+        .modal-content h3 { margin-top: 0; color: var(--accent); }
+        .modal-content input[type="text"] {
+            width: 100%; padding: 10px; margin: 15px 0;
+            border: 1px solid var(--primary); border-radius: 5px;
+            background: var(--bg-dark); color: var(--text);
+            font-size: 16px; box-sizing: border-box;
+        }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Area Peta -->
+        <div id="map"></div>
+
+        <!-- Panel Kontrol -->
+        <div class="control-panel">
+            <div class="header">
+                <h2>GPS Control</h2>
+                <div class="status" id="status-display">
+                    <span class="status-dot"></span>
+                    <span id="status-text">OFFLINE</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="btn-start-real" class="btn btn-primary">
+                    <span class="icon">🛰️</span> Mulai GPS Real-Time
+                </button>
+                <button id="btn-save" class="btn btn-secondary" disabled>
+                    <span class="icon">💾</span> Simpan Lokasi Ini
+                </button>
+            </div>
+
+            <hr>
+
+            <!-- FITUR BARU: INPUT MANUAL -->
+            <div class="manual-section">
+                <h3>Set Lokasi Manual</h3>
+                <div class="input-group">
+                    <input type="text" id="manual-lat" placeholder="Latitude (Contoh: -6.1753)" class="input-field">
+                    <input type="text" id="manual-lng" placeholder="Longitude (Contoh: 106.8271)" class="input-field">
+                </div>
+                <button id="btn-goto-coord" class="btn btn-green" style="width: 100%;">
+                    <span class="icon">📍</span> Terapkan Lokasi Manual
+                </button>
+            </div>
+            
+            <hr>
+
+            <div class="mock-section">
+                <h3>Mode Lokasi Tersimpan (Database)</h3>
+                <select id="saved-locations" class="dropdown" disabled>
+                    <option value="">Memuat lokasi dari database...</option>
+                </select>
+                
+                <div class="toggle-container">
+                    <span>Aktifkan Mode Mock</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mock-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Menyimpan Lokasi -->
+    <div id="save-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Simpan Lokasi ke Database</h3>
+            <p>Beri nama untuk lokasi Anda saat ini:</p>
+            <input type="text" id="location-name-input" placeholder="Contoh: Cafe X, Kantor, Rumah...">
+            <div class="modal-buttons">
+                <button id="btn-modal-cancel" class="btn btn-secondary">Batal</button>
+                <button id="btn-modal-save" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. KODE JAVASCRIPT DISINI -->
+    <script>
+        // Tunggu sampai semua elemen HTML dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- KONFIGURASI PENTING ---
+            // ⬇️ ⬇️ ⬇️ TEMPEL URL APLIKASI WEB ANDA DARI APPS SCRIPT DI SINI ⬇️ ⬇️ ⬇️
+            const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby1bTPjulhZWx6rQN2ePanm6_gdQOCsXx2F-eNA0JWExtz4913JoYGk8yWJ-0ZTqfMxYw/exec'; // ‼️ GANTI INI
+            // ⬆️ ⬆️ ⬆️ TEMPEL URL APLIKASI WEB ANDA DARI APPS SCRIPT DI ATAS ⬆️ ⬆️ ⬆️
+
+
+            // --- Referensi Elemen DOM ---
+            const mapElement = document.getElementById('map');
+            const statusText = document.getElementById('status-text');
+            const statusDot = document.querySelector('.status-dot');
+            const btnStartReal = document.getElementById('btn-start-real');
+            const btnSave = document.getElementById('btn-save');
+            const savedLocationsSelect = document.getElementById('saved-locations');
+            const mockToggle = document.getElementById('mock-toggle');
+            
+            // Elemen Baru
+            const manualLatInput = document.getElementById('manual-lat');
+            const manualLngInput = document.getElementById('manual-lng');
+            const btnGotoCoord = document.getElementById('btn-goto-coord');
+
+            // Modal elements
+            const saveModal = document.getElementById('save-modal');
+            const locationNameInput = document.getElementById('location-name-input');
+            const btnModalSave = document.getElementById('btn-modal-save');
+            const btnModalCancel = document.getElementById('btn-modal-cancel');
+
+            // --- Variabel State Aplikasi ---
+            let map = null;
+            let marker = null;
+            let currentLocation = null; // Menyimpan { lat, lng }
+            let isMockMode = false;
+            let realGpsWatchId = null;
+            let savedLocations = []; // Sekarang diisi dari Google Sheets
+
+            // --- Inisialisasi Peta ---
+            function initMap() {
+                map = L.map(mapElement).setView([-6.175392, 106.827153], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                marker = L.marker([-6.175392, 106.827153]).addTo(map)
+                    .bindPopup('Peta Dimuat. Nyalakan GPS.')
+                    .openPopup();
+                updateStatus('OFFLINE', 'offline');
+                
+                // Panggil fungsi baru untuk load data dari backend
+                loadLocationsFromGAS();
+            }
+
+            // --- Fungsi Update Status ---
+            function updateStatus(text, className) {
+                statusText.textContent = text;
+                statusDot.className = 'status-dot ' + className;
+            }
+
+            // --- Fungsi Update Peta ---
+            function updateMap(lat, lng, popupText) {
+                const newLatLng = [lat, lng];
+                map.setView(newLatLng, 15);
+                marker.setLatLng(newLatLng);
+                marker.bindPopup(popupText).openPopup();
+            }
+
+            // --- Fungsi GPS (Real-Time) ---
+            function startRealGps() {
+                if (!navigator.geolocation) {
+                    alert("Maaf, browser Anda tidak mendukung Geolocation.");
+                    return;
+                }
+                if (realGpsWatchId) stopRealGps();
+                
+                updateStatus('MENCARI...', 'live');
+                btnStartReal.disabled = true;
+
+                realGpsWatchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        currentLocation = { lat: latitude, lng: longitude };
+                        
+                        if (!isMockMode) {
+                            updateMap(latitude, longitude, 'Anda di sini! (LIVE)');
+                            updateStatus('LIVE', 'live');
+                        }
+                        btnSave.disabled = false;
+                    },
+                    (error) => {
+                        console.error("Error GPS:", error.message);
+                        updateStatus('GAGAL GPS', 'offline');
+                        alert("Tidak bisa mendapatkan lokasi. Pastikan GPS dan izin lokasi aktif. Error: " + error.message);
+                        btnStartReal.disabled = false;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            }
+
+            function stopRealGps() {
+                if (realGpsWatchId) {
+                    navigator.geolocation.clearWatch(realGpsWatchId);
+                    realGpsWatchId = null;
+                    btnStartReal.disabled = false;
+                }
+            }
+
+            // --- FUNGSI BARU: Load & Save ke Google Apps Script ---
+            
+            async function loadLocationsFromGAS() {
+                if (GAS_WEB_APP_URL.includes('xxxxxxxxx')) {
+                    alert('PENTING: Harap edit file HTML dan isi variabel GAS_WEB_APP_URL dengan URL deployment Apps Script Anda.');
+                    savedLocationsSelect.innerHTML = '<option value="">KESALAHAN KONFIGURASI</option>';
+                    return;
+                }
+
+                savedLocationsSelect.disabled = true;
+                savedLocationsSelect.innerHTML = '<option value="">Memuat data...</option>';
+                
+                try {
+                    const response = await fetch(GAS_WEB_APP_URL);
+                    const result = await response.json();
+                    
+                    if (result.success && Array.isArray(result.data)) {
+                        savedLocations = result.data; // Simpan data ke state
+                        populateLocationsDropdown(); // Panggil fungsi untuk isi dropdown
+                        savedLocationsSelect.disabled = false;
+                    } else {
+                        throw new Error(result.error || 'Format data salah');
+                    }
+                } catch (error) {
+                    console.error('Gagal memuat lokasi:', error);
+                    savedLocationsSelect.innerHTML = '<option value="">Gagal memuat</option>';
+                }
+            }
+
+            function populateLocationsDropdown() {
+                savedLocationsSelect.innerHTML = '<option value="">Pilih lokasi...</option>';
+                savedLocations.forEach((loc, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    // Tampilkan nama dan sedikit koordinat
+                    option.textContent = `${loc.name} (${parseFloat(loc.lat).toFixed(3)}, ${parseFloat(loc.lng).toFixed(3)})`;
+                    savedLocationsSelect.appendChild(option);
+                });
+            }
+
+            function showSaveModal() {
+                if (!currentLocation) {
+                    alert("Tidak ada lokasi untuk disimpan. Tentukan lokasi dulu (via GPS atau Manual).");
+                    return;
+                }
+                locationNameInput.value = '';
+                saveModal.style.display = 'flex';
+                setTimeout(() => saveModal.classList.add('show'), 10);
+            }
+
+            function hideSaveModal() {
+                saveModal.classList.remove('show');
+                setTimeout(() => saveModal.style.display = 'none', 300);
+            }
+
+            async function saveLocationToGAS() {
+                const name = locationNameInput.value.trim();
+                if (name === '') {
+                    alert("Nama lokasi tidak boleh kosong!");
+                    return;
+                }
+                
+                if (!currentLocation) {
+                    alert("Lokasi tidak ditemukan!");
+                    return;
+                }
+
+                // Nonaktifkan tombol simpan selama proses
+                btnModalSave.disabled = true;
+                btnModalSave.textContent = 'Menyimpan...';
+
+                const payload = {
+                    name: name,
+                    lat: currentLocation.lat,
+                    lng: currentLocation.lng
+                };
+
+                try {
+                    const response = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        cache: 'no-cache',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                        redirect: 'follow'
+                    });
+                    
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Lokasi berhasil disimpan!');
+                        hideSaveModal();
+                        loadLocationsFromGAS(); // Muat ulang daftar lokasi
+                    } else {
+                        throw new Error(result.error || 'Gagal menyimpan ke server');
+                    }
+
+                } catch (error) {
+                    console.error('Gagal menyimpan lokasi:', error);
+                    alert('Gagal menyimpan lokasi: ' + error.message);
+                } finally {
+                    // Aktifkan kembali tombol
+                    btnModalSave.disabled = false;
+                    btnModalSave.textContent = 'Simpan';
+                }
+            }
+            
+            // --- FUNGSI BARU: Set Lokasi Manual ---
+            function setManualCoordinates() {
+                const lat = parseFloat(manualLatInput.value);
+                const lng = parseFloat(manualLngInput.value);
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    alert("Latitude dan Longitude harus berupa angka yang valid!");
+                    return;
+                }
+                
+                // Set lokasi saat ini
+                currentLocation = { lat: lat, lng: lng };
+                
+                // Update peta
+                updateMap(lat, lng, `Lokasi Manual: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                
+                // Aktifkan tombol simpan
+                btnSave.disabled = false;
+                
+                // Hapus input
+                manualLatInput.value = '';
+                manualLngInput.value = '';
+                
+                // Jika sedang mode mock, nonaktifkan
+                if (isMockMode) {
+                    mockToggle.checked = false;
+                    toggleMockMode(); // Panggil fungsi untuk mematikan mock mode
+                }
+                
+                updateStatus('MANUAL SET', 'live'); // Gunakan status 'live' agar terlihat aktif
+            }
+
+            // --- Fungsi Mode Mock (Sudah disesuaikan) ---
+            function toggleMockMode() {
+                isMockMode = mockToggle.checked;
+
+                if (isMockMode) {
+                    const selectedIndex = savedLocationsSelect.value;
+                    if (selectedIndex === "") {
+                        alert("Pilih lokasi tersimpan dari database terlebih dahulu!");
+                        mockToggle.checked = false;
+                        isMockMode = false;
+                        return;
+                    }
+
+                    stopRealGps();
+
+                    // Ambil data dari array 'savedLocations' yang sudah di-load
+                    const selectedLoc = savedLocations[selectedIndex];
+                    
+                    // Pastikan lat/lng adalah angka
+                    const lat = parseFloat(selectedLoc.lat);
+                    const lng = parseFloat(selectedLoc.lng);
+
+                    currentLocation = { lat: lat, lng: lng };
+                    
+                    updateMap(lat, lng, `Lokasi Mock: ${selectedLoc.name} (AKTIF)`);
+                    updateStatus('MOCK', 'mock');
+                    
+                    btnStartReal.disabled = true;
+                    btnSave.disabled = false; // Bisa simpan ulang lokasi mock dgn nama baru
+                } else {
+                    btnStartReal.disabled = false;
+                    btnSave.disabled = true;
+                    currentLocation = null;
+                    updateStatus('OFFLINE', 'offline');
+                    marker.bindPopup('Mode Mock Nonaktif.').openPopup();
+                }
+            }
+
+            // --- Event Listeners ---
+            btnStartReal.addEventListener('click', startRealGps);
+            btnSave.addEventListener('click', showSaveModal);
+            mockToggle.addEventListener('change', toggleMockMode);
+            
+            // Listener baru
+            btnGotoCoord.addEventListener('click', setManualCoordinates);
+
+            // Listener modal (diubah ke fungsi GAS)
+            btnModalSave.addEventListener('click', saveLocationToGAS);
+            btnModalCancel.addEventListener('click', hideSaveModal);
+
+            // --- Inisialisasi Aplikasi ---
+            initMap();
+        });
+    </script>
+
+</body>
+</html>
