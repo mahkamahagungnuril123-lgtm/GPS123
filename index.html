@@ -23,14 +23,16 @@
             background-color: var(--text-dark); /* BG dasar */
         }
 
-        /* Container untuk background Vanta.js */
+        /* === PERBAIKAN 1 === */
+        /* Mengganti '100vw' (viewport width) menjadi '100%' */
+        /* Ini mencegah 'horizontal overflow' kecil jika ada scrollbar */
         #vanta-background {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
+            width: 100%; /* <-- DIUBAH DARI 100vw */
             height: 100vh;
-            z-index: 0; /* Diletakkan di stack paling bawah */
+            z-index: 0; 
         }
         
         .page-container {
@@ -189,6 +191,50 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* === PERBAIKAN 2: TAMBAHAN UNTUK TAMPILAN HP === */
+        @media (max-width: 768px) {
+            .card {
+                padding: 1.5rem; /* Kurangi padding di HP */
+            }
+
+            /* Perbaikan untuk 'Settings' box: 
+              'min-width: 300px' yang ada di inline style terlalu besar untuk HP.
+              Kita paksa 'min-width' menjadi 100% agar Ganti Password
+              dan Email Recovery tersusun ke bawah (stack).
+            */
+            .settings-box > div > div {
+                min-width: 100% !important; /* Paksa jadi 100% width & stack */
+            }
+
+            /* Perbaikan untuk 'Filter' box:
+              Membuat filter tersusun ke bawah di HP
+            */
+            #searchForm {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #searchForm .input-group {
+                min-width: 100%; /* Biarkan full width di HP */
+            }
+            #searchForm button {
+                width: 100%;
+            }
+
+             /* Perbaikan untuk 'Download' box:
+              Membuat tombol tersusun ke bawah di HP
+            */
+            .download-section .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+             .download-section .button-group button,
+             .download-section .button-group .btn-link {
+                width: 100%;
+             }
+        }
+        /* === BATAS PERBAIKAN === */
+
     </style>
 </head>
 <body>
