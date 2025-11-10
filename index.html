@@ -282,6 +282,7 @@
                 <div class="input-group"><label for="nipPegawai">NIP Pegawai</label><input type="text" id="nipPegawai" required></div>
                 <div class="input-group"><label for="namaBarang">Nama Barang</label><input type="text" id="namaBarang" required></div>
                 <div class="input-group"><label for="jumlahBarang">Jumlah</label><input type="number" id="jumlahBarang" required></div>
+                <div class="input-group"><label for="satuanBarang">Satuan Barang</label><input type="text" id="satuanBarang" required placeholder="cth: unit, buah, rim, kotak"></div>
                 <div class="input-group"><label for="tanggal">Tanggal Pengambilan</label><input type="date" id="tanggal" required></div>
                 <div class="input-group"><label for="waktu">Waktu</label><input type="time" id="waktu" required></div>
                 <div class="input-group">
@@ -372,7 +373,7 @@
             </div>
             <div class="table-container">
                 <table id="dataTable">
-                    <thead><tr><th>No</th><th>Nama Pegawai</th><th>NIP</th><th>Nama Barang</th><th>Jumlah</th><th>Tanggal</th><th>Waktu</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>No</th><th>Nama Pegawai</th><th>NIP</th><th>Nama Barang</th><th>Jumlah</th><th>Satuan</th><th>Tanggal</th><th>Waktu</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
                     <tbody id="dataTableBody"></tbody>
                 </table>
                  <p id="table-status" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</p>
@@ -392,6 +393,7 @@
                 <div class="input-group"><label for="editNipPegawai">NIP</label><input type="text" id="editNipPegawai" required></div>
                 <div class="input-group"><label for="editNamaBarang">Nama Barang</label><input type="text" id="editNamaBarang" required></div>
                 <div class="input-group"><label for="editJumlahBarang">Jumlah</label><input type="number" id="editJumlahBarang" required></div>
+                <div class="input-group"><label for="editSatuanBarang">Satuan Barang</label><input type="text" id="editSatuanBarang" required></div>
                 <div class="input-group"><label for="editTanggal">Tanggal</label><input type="date" id="editTanggal" required></div>
                 <div class="input-group"><label for="editWaktu">Waktu</label><input type="time" id="editWaktu" required></div>
                 <button type="submit"><i class="fa-solid fa-save"></i> Simpan Perubahan</button>
@@ -459,8 +461,8 @@
             }
         });
     
-        // === URL BARU ANDA ===
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj7kuMefLZfRKokrWg8nMI-CDNR7sRuekA7AadTP62Gwen9Frh4HW5r1zxwnrVImti/exec';
+        // === URL BARU ANDA (DIPERBARUI) ===
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwcrAd1QGr41irTwsgRGIbGdIAOz3eGh2wYH9qQYVAgp2fao0QNKP7xSeDtSlDq9r3q/exec';
         
         let currentData = [];
         const canvas = document.getElementById('signature-pad');
@@ -593,6 +595,7 @@
                         "Nip Pegawai": document.getElementById('nipPegawai').value,
                         "Nama Barang": document.getElementById('namaBarang').value,
                         "Jumlah Barang": document.getElementById('jumlahBarang').value,
+                        "Satuan Barang": document.getElementById('satuanBarang').value, // <-- BARU
                         "Tanggal Pengambilan": document.getElementById('tanggal').value,
                         "Waktu": document.getElementById('waktu').value,
                         "Tanda Tangan Penerima": signatureDataUrl
@@ -667,12 +670,14 @@
                     } catch (e) { /* Biarkan default */ }
                 }
 
+                // === BARU: TAMBAHAN 'Satuan Barang' DI TABEL ===
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${item['Nama Pegawai']||''}</td>
                     <td>${item['Nip Pegawai']||''}</td>
                     <td>${item['Nama Barang']||''}</td>
                     <td>${item['Jumlah Barang']||''}</td>
+                    <td>${item['Satuan Barang']||''}</td> 
                     <td>${item['Tanggal Pengambilan']||''}</td>
                     <td>${item['Waktu']||''}</td>
                     <td>${signatureCell}</td>
@@ -718,6 +723,7 @@
                 document.getElementById('editNipPegawai').value = item['Nip Pegawai'];
                 document.getElementById('editNamaBarang').value = item['Nama Barang'];
                 document.getElementById('editJumlahBarang').value = item['Jumlah Barang'];
+                document.getElementById('editSatuanBarang').value = item['Satuan Barang']; // <-- BARU
                 document.getElementById('editTanggal').value = item['Tanggal Pengambilan'];
                 document.getElementById('editWaktu').value = item['Waktu'];
                 showModal('editModal', true);
@@ -740,6 +746,7 @@
                 data: {
                     "Nama Pegawai": document.getElementById('editNamaPegawai').value, "Nip Pegawai": document.getElementById('editNipPegawai').value,
                     "Nama Barang": document.getElementById('editNamaBarang').value, "Jumlah Barang": document.getElementById('editJumlahBarang').value,
+                    "Satuan Barang": document.getElementById('editSatuanBarang').value, // <-- BARU
                     "Tanggal Pengambilan": document.getElementById('editTanggal').value, "Waktu": document.getElementById('editWaktu').value
                 }
             };
@@ -926,7 +933,8 @@
                 try {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF({ orientation: 'landscape' });
-                    const head = [['No', 'Nama Pegawai', 'NIP', 'Nama Barang', 'Jumlah', 'Tanggal', 'Waktu', 'Tanda Tangan']];
+                    // === BARU: TAMBAHAN HEADER PDF 'SATUAN' ===
+                    const head = [['No', 'Nama Pegawai', 'NIP', 'Nama Barang', 'Jumlah', 'Satuan', 'Tanggal', 'Waktu', 'Tanda Tangan']];
                     
                     const imagePromises = currentData.map(item => {
                         const signatureUrl = item['Tanda Tangan Penerima'];
@@ -946,9 +954,11 @@
 
                     const body = [];
                     currentData.forEach((item, index) => {
+                        // === BARU: TAMBAHAN DATA PDF 'Satuan Barang' ===
                         const rowData = [
                             index + 1, 
                             item['Nama Pegawai'], item['Nip Pegawai'], item['Nama Barang'], item['Jumlah Barang'],
+                            item['Satuan Barang'], // <-- DITAMBAHKAN
                             item['Tanggal Pengambilan'], item['Waktu']
                         ];
                         
@@ -972,14 +982,16 @@
                             body: chunk, 
                             startY: 22,
                             didDrawCell: function (data) {
-                                if (data.column.index === 7 && data.cell.raw && data.cell.raw.image) {
+                                // === BARU: UPDATE INDEKS KOLOM TTD (MENJADI 8) ===
+                                if (data.column.index === 8 && data.cell.raw && data.cell.raw.image) {
                                     const img = data.cell.raw;
                                     const x = data.cell.x + (data.cell.width - img.width) / 2;
                                     const y = data.cell.y + (data.cell.height - img.height) / 2;
                                     doc.addImage(img.image, 'PNG', x, y, img.width, img.height);
                                 }
                             },
-                            columnStyles: { 7: { cellWidth: 40, minCellHeight: 20, halign: 'center', valign: 'middle' } }
+                            // === BARU: UPDATE INDEKS KOLOM TTD (MENJADI 8) ===
+                            columnStyles: { 8: { cellWidth: 40, minCellHeight: 20, halign: 'center', valign: 'middle' } }
                         });
                     }
                     
@@ -1002,12 +1014,14 @@
                 const csvData = currentData.map((row, index) => {
                     const { rowNumber, 'Tanda Tangan Penerima': ttd, ...rest } = row;
                     rest['No'] = index + 1;
+                    // === BARU: TAMBAHAN DATA CSV 'Satuan Barang' ===
                     const orderedRow = {
                         'No': rest['No'],
                         'Nama Pegawai': rest['Nama Pegawai'],
                         'Nip Pegawai': rest['Nip Pegawai'],
                         'Nama Barang': rest['Nama Barang'],
                         'Jumlah Barang': rest['Jumlah Barang'],
+                        'Satuan Barang': rest['Satuan Barang'], // <-- DITAMBAHKAN
                         'Tanggal Pengambilan': rest['Tanggal Pengambilan'],
                         'Waktu': rest['Waktu']
                     };
