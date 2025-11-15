@@ -6,11 +6,12 @@
     <title>Aplikasi Pengambilan Barang</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
+        /* ... (CSS Anda tidak berubah) ... */
         :root {
             --primary-color: #4f46e5; --primary-hover: #4338ca; --secondary-color: #64748b;
             --secondary-hover: #475569; --bg-gradient-start: #6a11cb; --bg-gradient-end: #2575fc;
@@ -20,28 +21,15 @@
         }
         body {
             font-family: 'Inter', sans-serif; margin: 0; color: var(--text-dark);
-            background-color: var(--text-dark); /* BG dasar */
+            background-color: var(--text-dark);
         }
-
-        /* === PERBAIKAN 1 === */
-        /* Mengganti '100vw' (viewport width) menjadi '100%' */
-        /* Ini mencegah 'horizontal overflow' kecil jika ada scrollbar */
         #vanta-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%; /* <-- DIUBAH DARI 100vw */
-            height: 100vh;
-            z-index: 0; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; 
         }
-        
         .page-container {
             width: 100%; min-height: 100vh; padding: 2rem 1rem;
             display: none; justify-content: center; align-items: center; box-sizing: border-box;
-            flex-direction: column; 
-            gap: 2rem; 
-            position: relative;
-            z-index: 1;
+            flex-direction: column; gap: 2rem; position: relative; z-index: 1;
         }
         .page-container.active { display: flex; }
         #loginPage { background: none; }
@@ -57,13 +45,20 @@
         .login-box p { margin: 0 0 2rem 0; color: #cbd5e1; }
         .input-group { margin-bottom: 1.5rem; text-align: left; }
         .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #cbd5e1; }
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%; padding: 0.75rem 1rem; background-color: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2); border-radius: 0.5rem; box-sizing: border-box;
             color: var(--text-light); font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-group input::placeholder { color: #94a3b8; }
-        .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); }
+        .input-group input:focus, .input-group select:focus { 
+            outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); 
+        }
+        .card .input-group label, .modal .input-group label { color: var(--text-dark); }
+        .card .input-group input, .card .input-group select, 
+        .modal .input-group input, .modal .input-group select, .form-box textarea {
+            background-color: #fff; border: 1px solid #cbd5e1; color: var(--text-dark);
+        }
         .role-selector { display: flex; gap: 0.5rem; background-color: rgba(255,255,255,0.1); border-radius: 0.5rem; padding: 0.5rem; }
         .role-selector label {
             flex: 1; padding: 0.5rem 0.75rem; border-radius: 0.375rem; cursor: pointer;
@@ -89,22 +84,9 @@
         .header h2 { margin: 0; font-size: 1.5rem; color: var(--text-dark); }
         .logout-btn { background-color: var(--secondary-color); width: auto; padding: 0.5rem 1rem; }
         .logout-btn:hover { background-color: var(--secondary-hover); }
-        .form-box .input-group input, .form-box textarea, .dashboard-box .input-group input, .dashboard-box .input-group select,
-        .settings-box .input-group input { 
-            color: var(--text-dark); background-color: #fff; border: 1px solid #cbd5e1; 
-        }
-        .form-box .input-group input:focus, .form-box textarea:focus, .dashboard-box .input-group input:focus, .dashboard-box .input-group select:focus,
-        .settings-box .input-group input:focus { 
-            border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); 
-        }
-        .settings-box .input-group label {
-            color: var(--text-dark); /* Label gelap di card putih */
-        }
         .signature-pad-container { border: 2px dashed var(--border-color); border-radius: 0.5rem; height: 200px; touch-action: none; position: relative; }
         .signature-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #94a3b8; }
-        
         #signature-pad { width: 100%; height: 100%; }
-        
         button.secondary-btn, .btn-link.secondary-btn { background-color: var(--secondary-color); margin-top: 1rem; }
         button.secondary-btn:hover, .btn-link.secondary-btn:hover { background-color: var(--secondary-hover); }
         .status { text-align: center; margin-top: 1.5rem; height: 1.25rem; font-weight: 600; }
@@ -118,134 +100,82 @@
         #dataTable tbody tr:hover { background-color: #f8fafc; }
         #dataTable .signature-img { max-width: 100px; height: auto; border-radius: 4px; }
         
-        .edit-btn, .delete-btn {
-            width: auto; padding: 0.375rem 0.75rem; font-size: 0.875rem;
-            color: white; border: none; border-radius: 0.5rem; cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .edit-btn { background-color: #f59e0b; }
-        .edit-btn:hover { background-color: #d97706; }
-        .delete-btn { background-color: var(--error-color); }
-        .delete-btn:hover { background-color: #b91c1c; }
-        .action-buttons { display: flex; gap: 0.5rem; }
+        #accountTable { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+        #accountTable th, #accountTable td { padding: 0.75rem 1rem; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border-color); }
+        #accountTable th { background-color: #f1f5f9; color: var(--text-dark); font-weight: 600; }
+        #accountTable tbody tr:last-child td { border-bottom: none; }
+        #accountTable tbody tr:hover { background-color: #f8fafc; }
+        #accountTable .delete-btn { font-size: 0.875rem; }
 
-        .filter-section, .download-section, .settings-box { 
-            padding: 1.5rem; border: 1px solid var(--border-color); 
-            border-radius: 0.75rem; margin-bottom: 1.5rem; background-color: #f8fafc; 
-        }
-        .filter-section h3, .download-section h3, .settings-box h3 { 
-            margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; 
-        }
+        .edit-btn, .delete-btn { width: auto; padding: 0.375rem 0.75rem; font-size: 0.875rem; color: white; border: none; border-radius: 0.5rem; cursor: pointer; }
+        .edit-btn { background-color: #f59e0b; } .edit-btn:hover { background-color: #d97706; }
+        .delete-btn { background-color: var(--error-color); } .delete-btn:hover { background-color: #b91c1c; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .filter-section, .download-section, .settings-box { padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 0.75rem; margin-bottom: 1.5rem; background-color: #f8fafc; }
+        .filter-section h3, .download-section h3, .settings-box h3 { margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; }
         #searchForm { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
         #searchForm .input-group { margin-bottom: 0; flex: 1; min-width: 200px; }
         #searchForm button { width: auto; padding: 0.75rem 1.5rem; }
         .download-section .button-group { display: flex; flex-wrap: wrap; gap: 1rem; }
         .download-section button, .download-section .btn-link { width: auto; padding: 0.75rem 1.5rem; margin-top: 0; }
-        
-        .modal { 
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); 
-            align-items: center; justify-content: center;
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal .card { max-width: 500px; position: relative; margin: 1rem; }
-        
-        #editModal .input-group label, #forgotPasswordModal .input-group label { color: var(--text-dark); }
-        #editModal .input-group input, #forgotPasswordModal .input-group input { 
-            color: var(--text-dark); background-color: #fff; border: 1px solid #cbd5e1; 
-        }
-        #editModal .input-group input:focus, #forgotPasswordModal .input-group input:focus { 
-            border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); 
-        }
-        
-        .close-btn { 
-            position: absolute; top: 1rem; right: 1.5rem; 
-            font-size: 2rem; cursor: pointer; color: #9ca3af; 
-            line-height: 1;
-        }
-
-        #forgotPasswordLink {
-            color: #cbd5e1;
-            text-decoration: none;
+        .modal .card { max-width: 500px; position: relative; margin: 1rem; max-height: 90vh; overflow-y: auto; }
+        .close-btn { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; color: #9ca3af; line-height: 1; }
+        .auth-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             margin-top: 1.5rem;
-            display: inline-block;
         }
-        #forgotPasswordLink:hover {
-            color: var(--text-light);
-            text-decoration: underline;
+        .auth-links a {
+            color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: color 0.2s;
         }
-
-        .loader-container {
-            display: none; position: fixed; z-index: 2000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
-            justify-content: center; align-items: center;
-        }
+        .auth-links a:hover { color: var(--text-light); text-decoration: underline; }
+        .loader-container { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.7); justify-content: center; align-items: center; }
         .loader-container.active { display: flex; }
-        .loader-spinner {
-            border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-color);
-            border-radius: 50%; width: 60px; height: 60px;
-            animation: spin 1s linear infinite;
+        .loader-spinner { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* STYLE UNTUK TABS */
+        .tab-navigation {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 2rem;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            margin-bottom: -2px;
         }
-
-        /* === PERBAIKAN 2: TAMBAHAN UNTUK TAMPILAN HP === */
-        /* (CATATAN: Blok CSS ini tidak akan terpakai lagi karena perubahan 
-           viewport di atas, tapi tidak masalah jika dibiarkan saja) */
-        @media (max-width: 768px) {
-            .card {
-                padding: 1.5rem; /* Kurangi padding di HP */
-            }
-
-            /* Perbaikan untuk 'Settings' box: 
-              'min-width: 300px' yang ada di inline style terlalu besar untuk HP.
-              Kita paksa 'min-width' menjadi 100% agar Ganti Password
-              dan Email Recovery tersusun ke bawah (stack).
-            */
-            .settings-box > div > div {
-                min-width: 100% !important; /* Paksa jadi 100% width & stack */
-            }
-
-            /* Perbaikan untuk 'Filter' box:
-              Membuat filter tersusun ke bawah di HP
-            */
-            #searchForm {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            #searchForm .input-group {
-                min-width: 100%; /* Biarkan full width di HP */
-            }
-            #searchForm button {
-                width: 100%;
-            }
-
-             /* Perbaikan untuk 'Download' box:
-              Membuat tombol tersusun ke bawah di HP
-            */
-            .download-section .button-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-             .download-section .button-group button,
-             .download-section .button-group .btn-link {
-                width: 100%;
-             }
+        .tab-btn:hover {
+            color: var(--text-dark);
+            background-color: #f8fafc;
         }
-        /* === BATAS PERBAIKAN === */
-
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
 
     <div id="vanta-background"></div>
-
-    <div id="loader-overlay" class="loader-container">
-        <div class="loader-spinner"></div>
-    </div>
+    <div id="loader-overlay" class="loader-container"><div class="loader-spinner"></div></div>
 
     <div id="loginPage" class="page-container active">
         <div class="login-box">
@@ -262,13 +192,20 @@
                         <label for="rolePengawas"><i class="fa-solid fa-user-shield"></i>Pengawas</label>
                     </div>
                 </div>
+                <div class="input-group" id="nip-login-group">
+                    <label for="loginNip">NIP Pegawai</label>
+                    <input type="text" id="loginNip" placeholder="Masukkan NIP">
+                </div>
                 <div class="input-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" required placeholder="password">
                 </div>
                 <button type="submit"><i class="fa-solid fa-right-to-bracket"></i>Login</button>
                 <p id="error-message" class="error"></p>
-                <a href="#" id="forgotPasswordLink">Lupa Password?</a>
+                <div class="auth-links">
+                    <a href="#" id="forgotPasswordLink">Lupa Password?</a>
+                    <a href="#" id="createAccountLink" style="color: var(--success-color); font-weight: 600;"><i class="fa-solid fa-user-plus"></i> Buat Akun Pegawai</a>
+                </div>
             </form>
         </div>
     </div>
@@ -276,12 +213,15 @@
     <div id="pegawaiPage" class="page-container">
         <div class="card form-box">
             <div class="header">
-                <h2>Sistem Pengambilan Barang</h2>
+                <div>
+                    <h2 style="font-size: 1.2rem;">Form Pengambilan</h2>
+                    <span id="welcome-pegawai" style="font-size: 0.9rem; color: var(--primary-color);"></span>
+                </div>
                 <a class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
             </div>
             <form id="itemForm">
-                <div class="input-group"><label for="namaPegawai">Nama Pegawai</label><input type="text" id="namaPegawai" required></div>
-                <div class="input-group"><label for="nipPegawai">NIP Pegawai</label><input type="text" id="nipPegawai" required></div>
+                <div class="input-group"><label for="namaPegawai">Nama Pegawai</label><input type="text" id="namaPegawai" required readonly style="background-color: #f1f5f9;"></div>
+                <div class="input-group"><label for="nipPegawai">NIP Pegawai</label><input type="text" id="nipPegawai" required readonly style="background-color: #f1f5f9;"></div>
                 <div class="input-group"><label for="namaBarang">Nama Barang</label><input type="text" id="namaBarang" required></div>
                 <div class="input-group"><label for="jumlahBarang">Jumlah</label><input type="number" id="jumlahBarang" required></div>
                 <div class="input-group"><label for="satuanBarang">Satuan Barang</label><input type="text" id="satuanBarang" required placeholder="cth: unit, buah, rim, kotak"></div>
@@ -304,84 +244,115 @@
     <div id="pengawasPage" class="page-container">
          <div class="card dashboard-box">
             <div class="header">
-                <h2>Laporan Pengambilan Barang</h2>
+                <h2>Dashboard Pengawas</h2>
                 <a class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
             </div>
-            <div class="filter-section">
-                <h3><i class="fa-solid fa-filter"></i> Filter Data</h3>
-                <form id="searchForm">
-                    <div class="input-group"><label for="startDate">Dari Tanggal</label><input type="date" id="startDate"></div>
-                    <div class="input-group"><label for="endDate">Sampai Tanggal</label><input type="date" id="endDate"></div>
-                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
-                    <button type="button" id="resetBtn" class="secondary-btn" style="margin-top:0;"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-                </form>
-            </div>
 
-            <div class="download-section">
-                <h3><i class="fa-solid fa-download"></i> Download & Akses Cepat</h3>
-                <div class="button-group">
-                    <button id="downloadPdfBtn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-                    <button id="downloadCsvBtn" class="secondary-btn"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
-                    
-                    <a href="https://docs.google.com/spreadsheets/d/1xNG0amekgoETi6B79tGX4xXY2vX-gfWE63vEGJYt0Po/edit?usp=sharing" target="_blank" class="btn-link" style="background-color: var(--success-color);">
-                        <i class="fa-solid fa-table-cells"></i> Buka Spreadsheet
-                    </a>
-                    <a href="https://drive.google.com/drive/folders/1Iqlyht5fBuhgvcH3_mLjw7mB2fyxKVWd?usp=sharing" target="_blank" class="btn-link" style="background-color: #f59e0b;">
-                        <i class="fa-brands fa-google-drive"></i> Buka Google Drive
-                    </a>
-                </div>
-            </div>
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="tab1-pengaturan"><i class="fa-solid fa-cogs"></i> Pengaturan Akun</button>
+                <button class="tab-btn" data-tab="tab2-laporan"><i class="fa-solid fa-table-list"></i> Laporan Barang</button>
+                <button class="tab-btn" data-tab="tab3-monitoring"><i class="fa-solid fa-users"></i> Monitoring Akun</button>
+            </nav>
 
-            <div class="settings-box">
-                <h3><i class="fa-solid fa-cogs"></i> Pengaturan Akun & Keamanan</h3>
-                <p id="settings-status" class="status"></p>
+            <div class="tab-content">
                 
-                <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <div id="tab1-pengaturan" class="tab-pane active">
+                    <p id="settings-status" class="status"></p>
                     
-                    <div style="flex: 1; min-width: 300px;">
-                        <h4>Ganti Password</h4>
-                        <form id="changePasswordForm">
-                            <div class="input-group">
-                                <label for="cpRole">Ganti Password Untuk Akun</label>
-                                <select id="cpRole" required style="padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; width: 100%;">
-                                    <option value="pengawas">Pengawas (Akun Anda)</option>
-                                    <option value="pegawai">Pegawai</option>
-                                </select>
+                    <div class="settings-box">
+                        <h3>Pengaturan Akun Pengawas</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                            <div style="flex: 1; min-width: 300px;">
+                                <h4>Ganti Password Pengawas</h4>
+                                <form id="changePasswordForm">
+                                    <div class="input-group">
+                                        <label for="cpNewPassword">Password Baru</label>
+                                        <input type="password" id="cpNewPassword" required minlength="4" placeholder="Minimal 4 karakter">
+                                    </div>
+                                    <button type="submit"><i class="fa-solid fa-key"></i> Simpan Password</button>
+                                </form>
                             </div>
-                            <div class="input-group">
-                                <label for="cpNewPassword">Password Baru</label>
-                                <input type="password" id="cpNewPassword" required minlength="4" placeholder="Minimal 4 karakter">
+                            <div style="flex: 1; min-width: 300px;">
+                                <h4>Email Recovery Pengawas</h4>
+                                <form id="updateEmailsForm">
+                                    <div class="input-group">
+                                        <label for="emailPengawas">Email</label>
+                                        <input type="email" id="emailPengawas" placeholder="admin@email.com" required>
+                                    </div>
+                                    <button type="submit"><i class="fa-solid fa-envelope"></i> Simpan Email</button>
+                                </form>
                             </div>
-                            <button type="submit"><i class="fa-solid fa-key"></i> Simpan Password Baru</button>
-                        </form>
-                    </div>
-                    
-                    <div style="flex: 1; min-width: 300px;">
-                        <h4>Email Recovery (Untuk Lupa Password)</h4>
-                        <form id="updateEmailsForm">
-                            <div class="input-group">
-                                <label for="emailPengawas">Email Akun Pengawas</label>
-                                <input type="email" id="emailPengawas" placeholder="admin@email.com" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="emailPegawai">Email Akun Pegawai</label>
-                                <input type="email" id="emailPegawai" placeholder="pegawai@email.com (opsional)">
-                            </div>
-                            <button type="submit"><i class="fa-solid fa-envelope"></i> Simpan Email Recovery</button>
-                        </form>
+                        </div>
                     </div>
 
+                    <div class="settings-box" style="margin-top: 2rem;">
+                        <h3>Ganti Password Akun Pegawai</h3>
+                        <form id="changePegawaiPasswordForm">
+                            <div class="input-group">
+                                <label for="cpPegawaiNip">NIP Pegawai</label>
+                                <input type="number" id="cpPegawaiNip" required placeholder="Masukkan NIP pegawai yang akan direset">
+                            </div>
+                            <div class="input-group">
+                                <label for="cpPegawaiNewPassword">Password Baru</label>
+                                <input type="password" id="cpPegawaiNewPassword" required minlength="4" placeholder="Password baru untuk pegawai">
+                            </div>
+                            <button type="submit"><i class="fa-solid fa-user-shield"></i> Ganti Password Pegawai</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <div class="table-container">
-                <table id="dataTable">
-                    <thead><tr><th>No</th><th>Nama Pegawai</th><th>NIP</th><th>Nama Barang</th><th>Jumlah</th><th>Satuan</th><th>Tanggal</th><th>Waktu</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
-                    <tbody id="dataTableBody"></tbody>
-                </table>
-                 <p id="table-status" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</p>
-            </div>
-        </div>
-        </div>
+
+                <div id="tab2-laporan" class="tab-pane">
+                    <div class="filter-section">
+                        <h3><i class="fa-solid fa-filter"></i> Filter Laporan Barang</h3>
+                        <form id="searchForm">
+                            <div class="input-group"><label for="startDate">Dari Tanggal</label><input type="date" id="startDate"></div>
+                            <div class="input-group"><label for="endDate">Sampai Tanggal</label><input type="date" id="endDate"></div>
+                            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+                            <button type="button" id="resetBtn" class="secondary-btn" style="margin-top:0;"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </form>
+                    </div>
+                    <div class="download-section">
+                        <h3><i class="fa-solid fa-download"></i> Download & Akses Cepat</h3>
+                        <div class="button-group">
+                            <button id="downloadPdfBtn"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                            <button id="downloadCsvBtn" class="secondary-btn"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+                            <a href="https://docs.google.com/spreadsheets/d/1xNG0amekgoETi6B79tGX4xXY2vX-gfWE63vEGJYt0Po/edit?usp=sharing" target="_blank" class="btn-link" style="background-color: var(--success-color);"><i class="fa-solid fa-table-cells"></i> Buka Spreadsheet</a>
+                            <a href="https://drive.google.com/drive/folders/1Iqlyht5fBuhgvcH3_mLjw7mB2fyxKVWd?usp=sharing" target="_blank" class="btn-link" style="background-color: #f59e0b;"><i class="fa-brands fa-google-drive"></i> Buka Google Drive</a>
+                        </div>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem;"><i class="fa-solid fa-table-list"></i> Laporan Pengambilan Barang</h3>
+                    <div class="table-container">
+                        <table id="dataTable">
+                            <thead><tr><th>No</th><th>Nama Pegawai</th><th>NIP</th><th>Nama Barang</th><th>Jumlah</th><th>Satuan</th><th>Tanggal</th><th>Waktu</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
+                            <tbody id="dataTableBody"></tbody>
+                        </table>
+                        <p id="table-status" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</p>
+                    </div>
+                </div>
+
+                <div id="tab3-monitoring" class="tab-pane">
+                    <div class="settings-box" style="background-color: #fff; padding: 0;"> 
+                        <h3 style="padding: 1.5rem 1.5rem 0 1.5rem; margin:0;"><i class="fa-solid fa-users"></i> Monitoring Akun Pegawai</h3>
+                        <div class="table-container" style="border: none; border-radius: 0;">
+                            <table id="accountTable">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Pegawai</th>
+                                        <th>NIP</th>
+                                        <th>Email Recovery</th>
+                                        <th>Nomor HP</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountTableBody"></tbody>
+                            </table>
+                            <p id="account-table-status" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data akun...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div> </div>
+    </div>
     
     <div id="editModal" class="modal">
         <div class="card">
@@ -409,18 +380,69 @@
                 <h2 style="font-size: 1.25rem;">Lupa Password</h2>
                 <span class="close-btn" data-modal-id="forgotPasswordModal">&times;</span>
             </div>
-            <p style="color: var(--text-muted); margin-top: 1rem;">Password baru akan dikirimkan ke email recovery yang terdaftar.</p>
             <p id="forgot-status" class="status"></p>
-            <form id="forgotPasswordForm" style="margin-top: 1.5rem;">
-                <div class="input-group">
-                    <label for="fpRole">Pilih Akun</label>
-                    <select id="fpRole" required style="padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; width: 100%;">
-                        <option value="">-- Pilih Akun --</option>
-                        <option value="pengawas">Pengawas</option>
-                        <option value="pegawai">Pegawai</option>
-                    </select>
-                </div>
-                <button type="submit"><i class="fa-solid fa-paper-plane"></i> Kirim Password Baru</button>
+
+            <div id="step1-request-email">
+                <p style="color: var(--text-muted); margin-top: 1rem;">Pilih akun dan masukkan email recovery Anda.</p>
+                <form id="forgotPasswordForm" style="margin-top: 1.5rem;">
+                    <div class="input-group">
+                        <label for="fpRole">Akun Yang Ingin Direset</label>
+                        <select id="fpRole" required>
+                            <option value="pegawai">Pegawai</option>
+                            <option value="pengawas">Pengawas</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="fpEmailGroup">
+                        <label for="fpEmail">Email Recovery</label>
+                        <input type="email" id="fpEmail" placeholder="Masukkan email saat daftar">
+                    </div>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i> Kirim Kode</button>
+                </form>
+            </div>
+
+            <div id="step2-reset-password" style="display: none;">
+                <p id="fpStep2Message" style="color: var(--text-muted); margin-top: 1rem;">
+                    </p>
+                <form id="resetPasswordForm" style="margin-top: 1.5rem;">
+                    <input type="hidden" id="resetEmailHidden">
+                    <input type="hidden" id="resetRoleHidden">
+                    <div class="input-group">
+                        <label for="resetOtp">Kode OTP</label>
+                        <input type="text" id="resetOtp" required placeholder="Masukkan 6-digit OTP" maxlength="6">
+                    </div>
+                    <div class="input-group">
+                        <label for="resetNewPassword">Password Baru</label>
+                        <input type="password" id="resetNewPassword" required minlength="4" placeholder="Min. 4 karakter">
+                    </div>
+                    <div class="input-group">
+                        <label for="resetConfirmPassword">Konfirmasi Password Baru</label>
+                        <input type="password" id="resetConfirmPassword" required placeholder="Ulangi password baru">
+                    </div>
+                    <button type="submit"><i class="fa-solid fa-save"></i> Simpan Password Baru</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="registerModal" class="modal">
+        <div class="card">
+            <div class="header" style="border: none; padding-bottom: 0;">
+                <h2 style="font-size: 1.25rem;">Buat Akun Pegawai</h2>
+                <span class="close-btn" data-modal-id="registerModal">&times;</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Silakan isi data diri dengan benar. Tanda (<span style="color:var(--error-color)">*</span>) wajib diisi.</p>
+            <p id="register-status" class="status"></p>
+            <form id="registerForm" style="margin-top: 1rem;">
+                
+                <div class="input-group"><label for="regNama">Nama Lengkap <span style="color:var(--error-color)">*</span></label><input type="text" id="regNama" required placeholder="Nama lengkap anda"></div>
+                <div class="input-group"><label for="regNip">NIP (Digunakan untuk Login) <span style="color:var(--error-color)">*</span></label><input type="number" id="regNip" required placeholder="NIP tanpa spasi"></div>
+                
+                <div class="input-group"><label for="regHp">Nomor HP <span style="color:var(--error-color)">*</span></label><input type="text" id="regHp" placeholder="08xxxxxxxxxx" required></div>
+                <div class="input-group"><label for="regEmail">Email Recovery <span style="color:var(--error-color)">*</span></label><input type="email" id="regEmail" required placeholder="Untuk reset password"></div>
+                <div class="input-group"><label for="regPassword">Password <span style="color:var(--error-color)">*</span></label><input type="password" id="regPassword" required minlength="4" placeholder="Buat password"></div>
+                
+                <button type="submit" style="background-color: var(--success-color);"><i class="fa-solid fa-check"></i> Daftar Sekarang</button>
             </form>
         </div>
     </div>
@@ -428,68 +450,52 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <script>
-        // GANTI SCRIPT: Inisialisasi Latar Belakang 3D VANTA.JS (GLOBE)
-        document.addEventListener('DOMContentLoaded', (event) => {
+        // === CONFIG ===
+        // 
+        // URL WEB APP BARU DARI ANDA (Versi 6 - OTP Pengawas)
+        // 
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzbiQ4PqjTIdrLPJd3UL5MoRmjwdqYa8mtD4F9n-ccJe_nep0H83GgxdBR_qg53C5yJ/exec';
+        // 
+        // 
+        
+        // Vanta JS Background
+        document.addEventListener('DOMContentLoaded', () => {
             try {
-                // Ambil warna dari CSS variables Anda untuk konsistensi
                 const vantaColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#4f46e5';
                 const vantaBgColor = getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim() || '#0f172a';
-                
                 VANTA.GLOBE({
-                    el: "#vanta-background", // Targetkan div yang kita buat
-                    mouseControls: true,
-                    touchControls: true,
-                    gyroControls: false,
-                    minHeight: 200.00,
-                    minWidth: 200.00,
-                    scale: 1.00,
-                    scaleMobile: 1.00,
-                    color: vantaColor,      // Warna daratan globe (dari --primary-color)
-                    color2: vantaColor,     // Warna atmosphere (opsional, disamakan)
-                    backgroundColor: vantaBgColor, // Warna latar (dari --text-dark)
-                    size: 1.0 // Ukuran globe
+                    el: "#vanta-background", mouseControls: true, touchControls: true, gyroControls: false,
+                    minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
+                    color: vantaColor, color2: vantaColor, backgroundColor: vantaBgColor, size: 1.0
                 });
-            } catch (e) {
-                console.error("Vanta.js gagal dimuat: ", e);
-                // Fallback jika gagal, setidaknya body punya warna
-                document.body.style.backgroundColor = '#0f172a';
-            }
+            } catch (e) { document.body.style.backgroundColor = '#0f172a'; }
         });
-    
-        // === URL BARU ANDA (DIPERBARUI) ===
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwcrAd1QGr41irTwsgRGIbGdIAOz3eGh2wYH9qQYVAgp2fao0QNKP7xSeDtSlDq9r3q/exec';
-        
+
+        // === STATE & UI HELPERS ===
         let currentData = [];
-        const canvas = document.getElementById('signature-pad');
-        let signaturePad;
-        if (canvas) {
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
-        }
-        
-        const tableBody = document.getElementById('dataTableBody');
-        const tableStatus = document.getElementById('table-status');
+        let currentUser = null; 
         const loaderOverlay = document.getElementById('loader-overlay');
-
-        function showLoading(isLoading) {
-            if (isLoading) {
-                loaderOverlay.classList.add('active');
-            } else {
-                loaderOverlay.classList.remove('active');
-            }
-        }
-
+        function showLoading(isLoading) { loaderOverlay.classList.toggle('active', isLoading); }
         function showPage(pageId) {
             document.querySelectorAll('.page-container').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
         }
+        function showModal(modalId, show) { document.getElementById(modalId).classList.toggle('active', show); }
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => showModal(btn.dataset.modalId, false));
+        });
+        window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.classList.remove('active'); };
 
+        // === SIGNATURE PAD ===
+        const canvas = document.getElementById('signature-pad');
+        let signaturePad;
+        if (canvas) { signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' }); }
         function resizeCanvas() {
             if (!canvas) return;
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -500,96 +506,120 @@
             const signaturePlaceholder = document.querySelector('.signature-placeholder');
             if (signaturePlaceholder) signaturePlaceholder.style.display = 'block';
         }
-
-        function showModal(modalId, show) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.toggle('active', show);
-            }
+        window.addEventListener("resize", resizeCanvas);
+        if (canvas) {
+            const placeholder = document.querySelector('.signature-placeholder');
+            signaturePad.addEventListener("beginStroke", () => { if(placeholder) placeholder.style.display = 'none'; });
+            document.getElementById('clear-signature').addEventListener('click', () => {
+                signaturePad.clear();
+                if(placeholder) placeholder.style.display = 'block';
+            });
         }
 
-        document.querySelectorAll('.close-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                showModal(btn.dataset.modalId, false);
-            });
-        });
-        
-        window.onclick = (e) => { 
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-            } 
-        };
-
+        // === LOGIN LOGIC ===
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const nipGroup = document.getElementById('nip-login-group');
+        const nipInput = document.getElementById('loginNip');
+        function toggleNipInput() {
+            const selected = document.querySelector('input[name="role"]:checked').value;
+            if (selected === 'pegawai') {
+                nipGroup.style.display = 'block';
+                nipInput.setAttribute('required', 'true');
+            } else {
+                nipGroup.style.display = 'none';
+                nipInput.removeAttribute('required');
+                nipInput.value = '';
+            }
+        }
+        roleRadios.forEach(radio => radio.addEventListener('change', toggleNipInput));
+        toggleNipInput(); 
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
             showLoading(true);
-            const selectedRole = document.querySelector('input[name="role"]:checked').value;
+            const role = document.querySelector('input[name="role"]:checked').value;
             const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = '';
-            
-            fetch(`${WEB_APP_URL}?action=login&role=${selectedRole}&password=${password}`)
+            const nip = document.getElementById('loginNip').value;
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = '';
+            let url = `${WEB_APP_URL}?action=login&role=${role}&password=${password}`;
+            if (role === 'pegawai') url += `&nip=${nip}`;
+            fetch(url)
                 .then(res => res.json())
                 .then(result => {
                     if (result.success) {
-                        sessionStorage.setItem('userRole', selectedRole);
-                        if (selectedRole === 'pengawas') {
+                        sessionStorage.setItem('userRole', role);
+                        if (role === 'pengawas') {
                             showPage('pengawasPage');
                             fetchDataPengawas(); 
                             loadSettings(); 
+                            fetchPegawaiAccounts();
+                            switchTab(document.querySelector('.tab-btn[data-tab="tab1-pengaturan"]'));
                         } else {
+                            currentUser = { nip: nip, nama: '' }; 
+                            document.getElementById('nipPegawai').value = nip;
+                            document.getElementById('namaPegawai').value = ""; 
+                            document.getElementById('welcome-pegawai').textContent = `NIP: ${nip}`;
+                            document.getElementById('namaPegawai').removeAttribute('readonly');
                             showPage('pegawaiPage');
                             setTimeout(resizeCanvas, 0); 
                         }
-                    } else {
-                        errorMessage.textContent = result.message || 'Kombinasi Role dan Password salah.';
-                    }
+                    } else { errorMsg.textContent = result.message || 'Login gagal.'; }
                 })
-                .catch(err => {
-                    errorMessage.textContent = 'Error: ' + err.message;
-                })
-                .finally(() => {
-                    showLoading(false);
-                });
+                .catch(err => { errorMsg.textContent = 'Error: ' + err.message; })
+                .finally(() => showLoading(false));
         });
-
         document.querySelectorAll('.logout-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                sessionStorage.removeItem('userRole');
+                sessionStorage.clear();
                 document.getElementById('loginForm').reset();
                 document.getElementById('error-message').textContent = '';
+                toggleNipInput();
                 showPage('loginPage');
             });
         });
 
-        window.addEventListener("resize", resizeCanvas);
+        // === REGISTER LOGIC ===
+        document.getElementById('createAccountLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showModal('registerModal', true);
+            document.getElementById('registerForm').reset();
+            document.getElementById('register-status').textContent = '';
+        });
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showLoading(true);
+            const status = document.getElementById('register-status');
+            status.textContent = 'Mendaftarkan...';
+            const payload = {
+                action: 'registerPegawai',
+                data: {
+                    Nama: document.getElementById('regNama').value,
+                    Nip: document.getElementById('regNip').value,
+                    NomorHp: document.getElementById('regHp').value,
+                    EmailRecovery: document.getElementById('regEmail').value,
+                    Password: document.getElementById('regPassword').value
+                }
+            };
+            fetch(WEB_APP_URL, {
+                method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain;charset=utf-8'}
+            }).then(res => res.json()).then(result => {
+                if (result.success) {
+                    alert('Akun berhasil dibuat! Silakan login dengan NIP dan Password Anda.');
+                    showModal('registerModal', false);
+                } else { throw new Error(result.message); }
+            }).catch(err => {
+                status.textContent = 'Gagal: ' + err.message;
+                status.style.color = 'var(--error-color)';
+            }).finally(() => showLoading(false));
+        });
 
-        if (canvas) {
-            const signaturePlaceholder = document.querySelector('.signature-placeholder');
-            signaturePad.addEventListener("beginStroke", () => {
-                if (signaturePlaceholder) signaturePlaceholder.style.display = 'none';
-            });
-            document.getElementById('clear-signature').addEventListener('click', () => {
-                signaturePad.clear();
-                if (signaturePlaceholder) signaturePlaceholder.style.display = 'block';
-            });
-        }
-        
+        // === FORM PENGAMBILAN BARANG ===
         const itemForm = document.getElementById('itemForm');
         if (itemForm) {
-            const statusMessage = document.getElementById('status-message');
-            const submitBtn = document.getElementById('submit-btn');
             itemForm.addEventListener('submit', function(event) {
                 event.preventDefault();
-                if (signaturePad.isEmpty()) { return alert("Tanda tangan tidak boleh kosong."); }
-                
+                if (signaturePad.isEmpty()) return alert("Tanda tangan wajib diisi.");
                 showLoading(true);
-                statusMessage.textContent = 'Mengirim data...';
-                statusMessage.style.color = 'orange';
-                submitBtn.disabled = true;
-
-                const signatureDataUrl = signaturePad.toDataURL('image/jpeg', 0.5);
-
                 const dataToSend = {
                     action: "create",
                     data: {
@@ -597,449 +627,416 @@
                         "Nip Pegawai": document.getElementById('nipPegawai').value,
                         "Nama Barang": document.getElementById('namaBarang').value,
                         "Jumlah Barang": document.getElementById('jumlahBarang').value,
-                        "Satuan Barang": document.getElementById('satuanBarang').value, // <-- BARU
+                        "Satuan Barang": document.getElementById('satuanBarang').value,
                         "Tanggal Pengambilan": document.getElementById('tanggal').value,
                         "Waktu": document.getElementById('waktu').value,
-                        "Tanda Tangan Penerima": signatureDataUrl
+                        "Tanda Tangan Penerima": signaturePad.toDataURL('image/jpeg', 0.5)
                     }
                 };
-
                 fetch(WEB_APP_URL, {
-                    method: 'POST', body: JSON.stringify(dataToSend), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: "follow"
+                    method: 'POST', body: JSON.stringify(dataToSend), headers: {'Content-Type': 'text/plain;charset=utf-8'}
                 }).then(res => res.json()).then(result => {
                     if (result.success) {
-                        statusMessage.textContent = 'Data berhasil dikirim!';
-                        statusMessage.style.color = 'var(--success-color)';
+                        alert('Data berhasil dikirim!');
                         itemForm.reset();
                         signaturePad.clear();
-                        const placeholder = document.querySelector('.signature-placeholder');
-                        if (placeholder) placeholder.style.display = 'block';
-                    } else { throw new Error(result.message || 'Terjadi kesalahan.'); }
-                }).catch(error => {
-                    statusMessage.textContent = 'Gagal mengirim: ' + error.message;
-                    statusMessage.style.color = 'var(--error-color)';
+                        if(currentUser && currentUser.nip) {
+                            document.getElementById('nipPegawai').value = currentUser.nip;
+                        }
+                        document.querySelector('.signature-placeholder').style.display = 'block';
+                    } else { throw new Error(result.message); }
+                }).catch(err => {
+                    alert('Gagal: ' + err.message);
                 }).finally(() => {
                     showLoading(false);
-                    submitBtn.disabled = false;
-                    setTimeout(() => { statusMessage.textContent = ''; }, 5000);
                 });
             });
         }
-        
+
+        // === LOGIKA TAB PENGAWAS ===
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        function switchTab(clickedButton) {
+            const tabId = clickedButton.dataset.tab;
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            clickedButton.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => switchTab(button));
+        });
+
+        // === DASHBOARD PENGAWAS: TAB 2 (LAPORAN BARANG) ===
+        const tableBody = document.getElementById('dataTableBody');
+        const tableStatus = document.getElementById('table-status');
         async function fetchDataPengawas(url = WEB_APP_URL + '?action=readAll') {
             if (!tableStatus) return;
-            
-            showLoading(true);
-            tableStatus.textContent = "Memuat data...";
+            tableStatus.textContent = 'Memuat data...';
             tableStatus.style.display = 'block';
             tableBody.innerHTML = '';
-
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                if (result.success) {
-                    currentData = result.data;
-                    displayDataPengawas(currentData);
-                } else { throw new Error(result.message); }
-            } catch (error) {
-                tableStatus.textContent = 'Gagal memuat data: ' + error.message;
-            } finally {
-                showLoading(false);
-            }
+                const res = await fetch(url);
+                const result = await res.json();
+                if (result.success) { currentData = result.data; displayData(currentData); } 
+                else { throw new Error(result.message); }
+            } catch (e) { tableStatus.textContent = 'Gagal: ' + e.message; }
         }
-
-        function displayDataPengawas(data) {
-            if (!tableBody) return;
-            tableBody.innerHTML = '';
-            if (data.length === 0) {
-                tableStatus.textContent = "Tidak ada data untuk ditampilkan.";
-                tableStatus.style.display = 'block';
-                return;
-            }
+        function displayData(data) {
+            if (data.length === 0) { tableStatus.textContent = "Tidak ada data."; return; }
             tableStatus.style.display = 'none';
-
-            data.forEach((item, index) => {
+            data.forEach((item, idx) => {
                 const row = document.createElement('tr');
-                const signatureUrl = item['Tanda Tangan Penerima'];
-                let signatureCell = 'Tidak Ada Ttd';
-                if (signatureUrl && typeof signatureUrl === 'string' && signatureUrl.includes('drive.google.com')) {
+                let sigHtml = 'No TTD';
+                if (item['Tanda Tangan Penerima'] && item['Tanda Tangan Penerima'].includes('drive.google.com')) {
                     try {
-                        const fileId = new URL(signatureUrl).searchParams.get('id');
-                        if (fileId) {
-                            signatureCell = `<img src="https://drive.google.com/thumbnail?id=${fileId}" alt="Tanda Tangan" class="signature-img"/>`;
-                        }
-                    } catch (e) { /* Biarkan default */ }
+                        const id = new URL(item['Tanda Tangan Penerima']).searchParams.get('id');
+                        if(id) sigHtml = `<img src="https://drive.google.com/thumbnail?id=${id}" class="signature-img"/>`;
+                    } catch(e) {}
                 }
-
-                // === BARU: TAMBAHAN 'Satuan Barang' DI TABEL ===
                 row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item['Nama Pegawai']||''}</td>
-                    <td>${item['Nip Pegawai']||''}</td>
-                    <td>${item['Nama Barang']||''}</td>
-                    <td>${item['Jumlah Barang']||''}</td>
-                    <td>${item['Satuan Barang']||''}</td> 
-                    <td>${item['Tanggal Pengambilan']||''}</td>
-                    <td>${item['Waktu']||''}</td>
-                    <td>${signatureCell}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="edit-btn" data-row='${JSON.stringify(item)}'>
-                                <i class="fa-solid fa-pencil"></i>
-                            </button>
-                            <button class="delete-btn" data-row-number="${item.rowNumber}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
+                    <td>${idx + 1}</td><td>${item['Nama Pegawai']||''}</td><td>${item['Nip Pegawai']||''}</td>
+                    <td>${item['Nama Barang']||''}</td><td>${item['Jumlah Barang']||''}</td><td>${item['Satuan Barang']||''}</td>
+                    <td>${item['Tanggal Pengambilan']||''}</td><td>${item['Waktu']||''}</td><td>${sigHtml}</td>
+                    <td><div class="action-buttons">
+                        <button class="edit-btn" data-row='${JSON.stringify(item)}'><i class="fa-solid fa-pencil"></i></button>
+                        <button class="delete-btn" data-row-number="${item.rowNumber}"><i class="fa-solid fa-trash"></i></button>
+                    </div></td>`;
                 tableBody.appendChild(row);
             });
         }
-        
-        const searchForm = document.getElementById('searchForm');
-        if (searchForm) {
-            searchForm.addEventListener('submit', function(e) {
+        if(document.getElementById('searchForm')) {
+            document.getElementById('searchForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                if (startDate && endDate) {
-                    fetchDataPengawas(`${WEB_APP_URL}?action=searchByDate&startDate=${startDate}&endDate=${endDate}`);
-                } else { alert('Silakan isi kedua tanggal untuk pencarian.'); }
+                const s = document.getElementById('startDate').value, ed = document.getElementById('endDate').value;
+                if(s && ed) fetchDataPengawas(`${WEB_APP_URL}?action=searchByDate&startDate=${s}&endDate=${ed}`);
             });
             document.getElementById('resetBtn').addEventListener('click', () => {
-                document.getElementById('searchForm').reset();
-                fetchDataPengawas();
+                document.getElementById('searchForm').reset(); fetchDataPengawas();
             });
         }
-
-        tableBody.addEventListener('click', function(e) {
-            const editButton = e.target.closest('.edit-btn');
-            const deleteButton = e.target.closest('.delete-btn');
-
-            if (editButton) {
-                const item = JSON.parse(editButton.dataset.row);
+        tableBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-btn');
+            const delBtn = e.target.closest('.delete-btn');
+            if (editBtn) {
+                const item = JSON.parse(editBtn.dataset.row);
                 document.getElementById('editRowNumber').value = item.rowNumber;
                 document.getElementById('editNamaPegawai').value = item['Nama Pegawai'];
                 document.getElementById('editNipPegawai').value = item['Nip Pegawai'];
                 document.getElementById('editNamaBarang').value = item['Nama Barang'];
                 document.getElementById('editJumlahBarang').value = item['Jumlah Barang'];
-                document.getElementById('editSatuanBarang').value = item['Satuan Barang']; // <-- BARU
+                document.getElementById('editSatuanBarang').value = item['Satuan Barang'];
                 document.getElementById('editTanggal').value = item['Tanggal Pengambilan'];
                 document.getElementById('editWaktu').value = item['Waktu'];
                 showModal('editModal', true);
             }
-            
-            if (deleteButton) {
-                const rowNumber = deleteButton.dataset.rowNumber;
-                if (confirm(`Apakah Anda yakin ingin menghapus data ini? (Baris Sheet: ${rowNumber})`)) {
-                    deleteData(rowNumber);
-                }
-            }
+            if (delBtn) { if(confirm('Hapus data laporan ini?')) deleteData(delBtn.dataset.rowNumber); }
         });
-
-        document.getElementById('editForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            showLoading(true);
-            const rowNumber = document.getElementById('editRowNumber').value;
-            const dataToUpdate = {
-                action: "update", rowNumber: parseInt(rowNumber),
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault(); showLoading(true);
+            const payload = {
+                action: 'update', rowNumber: parseInt(document.getElementById('editRowNumber').value),
                 data: {
                     "Nama Pegawai": document.getElementById('editNamaPegawai').value, "Nip Pegawai": document.getElementById('editNipPegawai').value,
                     "Nama Barang": document.getElementById('editNamaBarang').value, "Jumlah Barang": document.getElementById('editJumlahBarang').value,
-                    "Satuan Barang": document.getElementById('editSatuanBarang').value, // <-- BARU
-                    "Tanggal Pengambilan": document.getElementById('editTanggal').value, "Waktu": document.getElementById('editWaktu').value
+                    "Satuan Barang": document.getElementById('editSatuanBarang').value, "Tanggal Pengambilan": document.getElementById('editTanggal').value,
+                    "Waktu": document.getElementById('editWaktu').value
                 }
             };
-
-            fetch(WEB_APP_URL, {
-                method: 'POST', body: JSON.stringify(dataToUpdate), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            }).then(res => res.json()).then(result => {
-                if (result.success) {
-                    alert('Data berhasil diperbarui!');
-                    showModal('editModal', false);
-                    fetchDataPengawas(); 
-                } else { throw new Error(result.message); }
-            }).catch(error => { 
-                alert('Gagal mengirim update: ' + error.message); 
-                showLoading(false);
-            });
+            fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) })
+                .then(r=>r.json()).then(res => {
+                    if(res.success) { alert('Update berhasil'); showModal('editModal', false); fetchDataPengawas(); }
+                    else throw new Error(res.message);
+                }).catch(e => alert(e.message)).finally(()=>showLoading(false));
         });
-
-        async function deleteData(rowNumber) {
+        async function deleteData(row) {
             showLoading(true);
-            tableStatus.textContent = "Menghapus data...";
-            tableStatus.style.display = 'block';
-
-            const payload = { action: 'delete', rowNumber: parseInt(rowNumber) };
-
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow'
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('Data berhasil dihapus!');
-                    fetchDataPengawas();
-                } else {
-                    throw new Error(result.message || 'Gagal menghapus data.');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-                tableStatus.textContent = 'Gagal menghapus data: ' + error.message;
-                showLoading(false);
-            }
+                const res = await fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify({action:'delete', rowNumber:parseInt(row)}) });
+                const result = await res.json();
+                if(result.success) { alert('Laporan terhapus'); fetchDataPengawas(); } else throw new Error(result.message);
+            } catch(e) { alert(e.message); } finally { showLoading(false); }
         }
-        
-        // --- LOGIKA PENGATURAN PASSWORD & EMAIL ---
-        
-        const settingsStatus = document.getElementById('settings-status');
 
-        async function loadSettings() {
-            showLoading(true);
-            settingsStatus.textContent = '';
+        // === DASHBOARD PENGAWAS: TAB 3 (MANAJEMEN AKUN) ===
+        const accountTableBody = document.getElementById('accountTableBody');
+        const accountTableStatus = document.getElementById('account-table-status');
+        async function fetchPegawaiAccounts() {
+            if (!accountTableBody) return;
+            accountTableStatus.textContent = 'Memuat data akun...';
+            accountTableStatus.style.display = 'block';
+            accountTableBody.innerHTML = '';
             try {
-                const res = await fetch(`${WEB_APP_URL}?action=getSettings`);
+                const res = await fetch(`${WEB_APP_URL}?action=readPegawaiAccounts`);
                 const result = await res.json();
                 if (result.success) {
-                    document.getElementById('emailPengawas').value = result.settings.pengawas_email || '';
-                    document.getElementById('emailPegawai').value = result.settings.pegawai_email || '';
+                    displayPegawaiAccounts(result.data);
                 } else {
                     throw new Error(result.message);
                 }
-            } catch (error) {
-                settingsStatus.textContent = 'Gagal memuat email: ' + error.message;
-                settingsStatus.style.color = 'var(--error-color)';
+            } catch (e) {
+                accountTableStatus.textContent = 'Gagal memuat akun: ' + e.message;
+            }
+        }
+        function displayPegawaiAccounts(accounts) {
+            if (accounts.length === 0) {
+                accountTableStatus.textContent = 'Belum ada akun pegawai yang terdaftar.';
+                return;
+            }
+            accountTableStatus.style.display = 'none';
+            accounts.forEach(acc => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${acc.Nama || ''}</td>
+                    <td>${acc.Nip || ''}</td>
+                    <td>${acc['Email Recovery'] || ''}</td>
+                    <td>${acc['Nomor Hp'] || ''}</td>
+                    <td>
+                        <button class="delete-btn delete-account-btn" data-nip="${acc.Nip}" data-nama="${acc.Nama}">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </button>
+                    </td>
+                `;
+                accountTableBody.appendChild(row);
+            });
+        }
+        accountTableBody.addEventListener('click', function(e) {
+            const deleteBtn = e.target.closest('.delete-account-btn');
+            if (deleteBtn) {
+                const nip = deleteBtn.dataset.nip;
+                const nama = deleteBtn.dataset.nama;
+                if (confirm(`Apakah Anda yakin ingin menghapus akun pegawai:\nNama: ${nama}\nNIP: ${nip}\n\nPERINGATAN: Tindakan ini tidak bisa dibatalkan.`)) {
+                    deletePegawaiAccount(nip);
+                }
+            }
+        });
+        async function deletePegawaiAccount(nip) {
+            showLoading(true);
+            try {
+                const payload = { action: 'deletePegawaiAccount', nip: nip };
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain;charset=utf-8'}
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert(result.message);
+                    fetchPegawaiAccounts(); // Muat ulang tabel akun
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (e) {
+                alert('Gagal menghapus akun: ' + e.message);
             } finally {
                 showLoading(false);
             }
         }
 
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        // === DASHBOARD PENGAWAS: TAB 1 (PENGATURAN) ===
+        const settingsStatus = document.getElementById('settings-status');
+        async function loadSettings() {
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getSettings`);
+                const json = await res.json();
+                if(json.success) document.getElementById('emailPengawas').value = json.settings.pengawas_email || '';
+            } catch(e) { console.error(e); }
+        }
+        document.getElementById('changePasswordForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const p = document.getElementById('cpNewPassword').value;
             showLoading(true);
-            settingsStatus.textContent = '';
-            
-            const role = document.getElementById('cpRole').value;
-            const password = document.getElementById('cpNewPassword').value;
-
-            const payload = { action: 'changePassword', role, password };
-
-            fetch(WEB_APP_URL, {
-                method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            }).then(res => res.json()).then(result => {
-                if (result.success) {
-                    settingsStatus.textContent = result.message;
+            settingsStatus.textContent = "Menyimpan...";
+            fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify({action:'changePassword', role:'pengawas', password:p}) })
+                .then(r=>r.json()).then(res => {
+                    if(!res.success) throw new Error(res.message);
+                    settingsStatus.textContent = res.message;
                     settingsStatus.style.color = 'var(--success-color)';
-                    document.getElementById('cpNewPassword').value = ''; 
-                } else {
-                    throw new Error(result.message);
-                }
-            }).catch(error => {
-                settingsStatus.textContent = 'Gagal: ' + error.message;
-                settingsStatus.style.color = 'var(--error-color)';
-            }).finally(() => {
-                showLoading(false);
-                setTimeout(() => { settingsStatus.textContent = ''; }, 5000);
-            });
+                    document.getElementById('cpNewPassword').value=''; 
+                })
+                .catch(e=> {
+                    settingsStatus.textContent = e.message;
+                    settingsStatus.style.color = 'var(--error-color)';
+                }).finally(()=>showLoading(false));
         });
-
-        document.getElementById('updateEmailsForm').addEventListener('submit', function(e) {
+        document.getElementById('updateEmailsForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const em = document.getElementById('emailPengawas').value;
             showLoading(true);
-            settingsStatus.textContent = '';
-            
-            const payload = {
-                action: 'updateEmails',
-                pengawas_email: document.getElementById('emailPengawas').value,
-                pegawai_email: document.getElementById('emailPegawai').value
-            };
-
-            fetch(WEB_APP_URL, {
-                method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            }).then(res => res.json()).then(result => {
-                if (result.success) {
-                    settingsStatus.textContent = result.message;
+            settingsStatus.textContent = "Menyimpan...";
+            fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify({action:'updateEmails', pengawas_email:em}) })
+                .then(r=>r.json()).then(res => {
+                    if(!res.success) throw new Error(res.message);
+                    settingsStatus.textContent = res.message;
                     settingsStatus.style.color = 'var(--success-color)';
-                } else {
-                    throw new Error(result.message);
-                }
-            }).catch(error => {
-                settingsStatus.textContent = 'Gagal: ' + error.message;
-                settingsStatus.style.color = 'var(--error-color)';
-            }).finally(() => {
-                showLoading(false);
-                setTimeout(() => { settingsStatus.textContent = ''; }, 5000);
-            });
+                })
+                .catch(e=> {
+                    settingsStatus.textContent = e.message;
+                    settingsStatus.style.color = 'var(--error-color)';
+                }).finally(()=>showLoading(false));
         });
-
-        // --- LOGIKA LUPA PASSWORD ---
+        document.getElementById('changePegawaiPasswordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nip = document.getElementById('cpPegawaiNip').value;
+            const password = document.getElementById('cpPegawaiNewPassword').value;
+            showLoading(true);
+            settingsStatus.textContent = "Menyimpan...";
+            const payload = { action: 'changePassword', role: 'pegawai', nip: nip, password: password };
+            fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify(payload) })
+                .then(r=>r.json()).then(res => {
+                    if(!res.success) throw new Error(res.message);
+                    settingsStatus.textContent = res.message;
+                    settingsStatus.style.color = 'var(--success-color)';
+                    document.getElementById('changePegawaiPasswordForm').reset();
+                })
+                .catch(e=> {
+                    settingsStatus.textContent = 'Gagal: ' + e.message;
+                    settingsStatus.style.color = 'var(--error-color)';
+                }).finally(()=>showLoading(false));
+        });
+        
+        // === LOGIKA LUPA PASSWORD (DIUPDATE UNTUK PENGAWAS) ===
+        const fpRole = document.getElementById('fpRole');
+        const fpEmailGroup = document.getElementById('fpEmailGroup');
+        const fpEmailInput = document.getElementById('fpEmail');
+        const fpStep1 = document.getElementById('step1-request-email');
+        const fpStep2 = document.getElementById('step2-reset-password');
+        const fpStatus = document.getElementById('forgot-status');
+        
+        function toggleFpEmail() {
+            if (fpRole.value === 'pegawai') {
+                fpEmailGroup.style.display = 'block';
+                fpEmailInput.setAttribute('required', 'true');
+            } else {
+                fpEmailGroup.style.display = 'none';
+                fpEmailInput.removeAttribute('required');
+            }
+        }
+        fpRole.addEventListener('change', toggleFpEmail);
         
         document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
             e.preventDefault();
             showModal('forgotPasswordModal', true);
-            document.getElementById('forgot-status').textContent = '';
+            fpStep1.style.display = 'block';
+            fpStep2.style.display = 'none';
+            fpStatus.textContent = '';
             document.getElementById('forgotPasswordForm').reset();
+            document.getElementById('resetPasswordForm').reset();
+            toggleFpEmail();
         });
 
-        document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+        // Form 1: Minta Kode
+        document.getElementById('forgotPasswordForm').addEventListener('submit', (e) => {
             e.preventDefault();
             showLoading(true);
-            const status = document.getElementById('forgot-status');
-            status.textContent = 'Mengirim email...';
-            status.style.color = 'var(--text-muted)';
+            const role = fpRole.value;
+            const email = fpEmailInput.value;
+            fpStatus.textContent = 'Mengirim...';
+            
+            const payload = { action: 'forgotPassword', role: role };
+            if (role === 'pegawai') payload.email = email;
 
-            const role = document.getElementById('fpRole').value;
-            if (!role) {
-                alert('Silakan pilih akun.');
-                showLoading(false);
+            fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify(payload) })
+                .then(r=>r.json()).then(res => {
+                    if(!res.success) throw new Error(res.message);
+                    
+                    // --- LOGIKA BARU (Berlaku untuk Pegawai & Pengawas) ---
+                    fpStatus.textContent = res.message; // "OTP telah dikirim ke email@..."
+                    fpStatus.style.color = 'var(--success-color)';
+                    fpStep1.style.display = 'none';
+                    fpStep2.style.display = 'block';
+                    
+                    document.getElementById('resetEmailHidden').value = res.email; 
+                    document.getElementById('resetRoleHidden').value = role; // Simpan role
+                    
+                    document.getElementById('fpStep2Message').textContent = `Kode OTP 6-digit telah dikirim ke ${res.email}. Masukkan kode dan password baru Anda.`;
+                    
+                }).catch(e => {
+                    fpStatus.textContent = e.message; fpStatus.style.color='var(--error-color)';
+                }).finally(()=>showLoading(false));
+        });
+
+        // Form 2: Reset dengan OTP
+        document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('resetNewPassword').value;
+            const confirmPass = document.getElementById('resetConfirmPassword').value;
+
+            if (newPass !== confirmPass) {
+                fpStatus.textContent = 'Password baru tidak sama.';
+                fpStatus.style.color = 'var(--error-color)';
                 return;
             }
+            showLoading(true);
+            fpStatus.textContent = 'Memverifikasi...';
+            
+            const payload = {
+                action: 'resetPasswordWithOTP',
+                email: document.getElementById('resetEmailHidden').value,
+                otp: document.getElementById('resetOtp').value,
+                newPassword: newPass,
+                role: document.getElementById('resetRoleHidden').value // Kirim role
+            };
 
-            const payload = { action: 'forgotPassword', role };
-
-            fetch(WEB_APP_URL, {
-                method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            }).then(res => res.json()).then(result => {
-                if (result.success) {
-                    status.textContent = result.message;
-                    status.style.color = 'var(--success-color)';
-                    document.getElementById('forgotPasswordForm').reset();
-                } else {
-                    throw new Error(result.message);
-                }
-            }).catch(error => {
-                status.textContent = 'Gagal: ' + error.message;
-                status.style.color = 'var(--error-color)';
-            }).finally(() => {
-                showLoading(false);
-            });
+            fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify(payload) })
+                .then(r=>r.json()).then(res => {
+                    if(res.success) {
+                        fpStatus.textContent = res.message; 
+                        fpStatus.style.color = 'var(--success-color)';
+                        setTimeout(() => showModal('forgotPasswordModal', false), 3000);
+                    } else {
+                        throw new Error(res.message); 
+                    }
+                }).catch(e => {
+                    fpStatus.textContent = e.message;
+                    fpStatus.style.color = 'var(--error-color)';
+                }).finally(() => showLoading(false));
         });
 
 
-        // --- FUNGSI DOWNLOAD (TIDAK BERUBAH) ---
-        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-        if (downloadPdfBtn) {
-            downloadPdfBtn.addEventListener('click', async () => {
-                if (currentData.length === 0) { return alert("Tidak ada data untuk di-download."); }
-                
+        // === FUNGSI DOWNLOAD (TIDAK BERUBAH) ===
+        const dlPdf = document.getElementById('downloadPdfBtn');
+        if(dlPdf) {
+            dlPdf.addEventListener('click', async () => {
+                if(!currentData.length) return alert('No Data');
                 showLoading(true);
-                downloadPdfBtn.disabled = true; 
-                downloadPdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mempersiapkan...';
-                
                 try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({ orientation: 'landscape' });
-                    // === BARU: TAMBAHAN HEADER PDF 'SATUAN' ===
-                    const head = [['No', 'Nama Pegawai', 'NIP', 'Nama Barang', 'Jumlah', 'Satuan', 'Tanggal', 'Waktu', 'Tanda Tangan']];
-                    
-                    const imagePromises = currentData.map(item => {
-                        const signatureUrl = item['Tanda Tangan Penerima'];
-                        if (signatureUrl && typeof signatureUrl === 'string' && signatureUrl.includes('drive.google.com')) {
-                            try {
-                                const fileId = new URL(signatureUrl).searchParams.get('id');
-                                if (!fileId) return Promise.resolve(null);
-                                return fetch(`${WEB_APP_URL}?action=getImageAsBase64&id=${fileId}`)
-                                    .then(res => res.json())
-                                    .then(result => result.success ? result.base64 : null)
-                                    .catch(() => null);
-                            } catch (e) { return Promise.resolve(null); }
-                        } else { return Promise.resolve(null); }
+                    const { jsPDF } = window.jspdf; const doc = new jsPDF({orientation:'landscape'});
+                    const head = [['No','Nama','NIP','Barang','Jml','Satuan','Tgl','Waktu','TTD']];
+                    const imgProms = currentData.map(item => {
+                        if(item['Tanda Tangan Penerima'] && item['Tanda Tangan Penerima'].includes('drive')) {
+                           try {
+                               const id = new URL(item['Tanda Tangan Penerima']).searchParams.get('id');
+                               return fetch(`${WEB_APP_URL}?action=getImageAsBase64&id=${id}`).then(r=>r.json()).then(j=>j.success?j.base64:null).catch(()=>null);
+                           } catch(e) { return Promise.resolve(null); }
+                        } return Promise.resolve(null);
                     });
-
-                    const loadedImagesBase64 = await Promise.all(imagePromises);
-
-                    const body = [];
-                    currentData.forEach((item, index) => {
-                        // === BARU: TAMBAHAN DATA PDF 'Satuan Barang' ===
-                        const rowData = [
-                            index + 1, 
-                            item['Nama Pegawai'], item['Nip Pegawai'], item['Nama Barang'], item['Jumlah Barang'],
-                            item['Satuan Barang'], // <-- DITAMBAHKAN
-                            item['Tanggal Pengambilan'], item['Waktu']
-                        ];
-                        
-                        const imageData = loadedImagesBase64[index];
-                        if (imageData) {
-                            rowData.push({ image: imageData, width: 30, height: 15 });
-                        } else {
-                            rowData.push('Tidak Ada Ttd');
-                        }
-                        body.push(rowData);
+                    const base64s = await Promise.all(imgProms);
+                    const body = currentData.map((d,i) => [
+                        i+1, d['Nama Pegawai'], d['Nip Pegawai'], d['Nama Barang'], d['Jumlah Barang'], d['Satuan Barang'], d['Tanggal Pengambilan'], d['Waktu'],
+                        base64s[i] ? {image:base64s[i], width:30, height:15} : 'No TTD'
+                    ]);
+                    doc.autoTable({
+                        head, body, startY:20,
+                        didDrawCell: (data) => {
+                            if(data.column.index===8 && data.cell.raw && data.cell.raw.image) {
+                                doc.addImage(data.cell.raw.image, 'JPEG', data.cell.x+2, data.cell.y+2, 25, 12);
+                            }
+                        },
+                        columnStyles: { 8: { cellWidth: 30, minCellHeight: 15 } }
                     });
-
-                    const chunkSize = 8;
-                    for (let i = 0; i < body.length; i += chunkSize) {
-                        const chunk = body.slice(i, i + chunkSize);
-                        if (i > 0) doc.addPage();
-                        doc.setFontSize(16);
-                        doc.text("Laporan Pengambilan Barang", 14, 15);
-                        doc.autoTable({
-                            head: head, 
-                            body: chunk, 
-                            startY: 22,
-                            didDrawCell: function (data) {
-                                // === BARU: UPDATE INDEKS KOLOM TTD (MENJADI 8) ===
-                                if (data.column.index === 8 && data.cell.raw && data.cell.raw.image) {
-                                    const img = data.cell.raw;
-                                    const x = data.cell.x + (data.cell.width - img.width) / 2;
-                                    const y = data.cell.y + (data.cell.height - img.height) / 2;
-                                    doc.addImage(img.image, 'PNG', x, y, img.width, img.height);
-                                }
-                            },
-                            // === BARU: UPDATE INDEKS KOLOM TTD (MENJADI 8) ===
-                            columnStyles: { 8: { cellWidth: 40, minCellHeight: 20, halign: 'center', valign: 'middle' } }
-                        });
-                    }
-                    
-                    doc.save('laporan_pengambilan_barang.pdf');
-                } catch (error) {
-                    alert('Gagal membuat PDF: ' + error.message);
-                } finally {
-                    showLoading(false);
-                    downloadPdfBtn.disabled = false; 
-                    downloadPdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF';
-                }
+                    doc.save('Laporan.pdf');
+                } catch(e){ alert(e.message); } finally { showLoading(false); }
             });
         }
-        
-        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
-        if (downloadCsvBtn) {
-            downloadCsvBtn.addEventListener('click', () => {
-                if (currentData.length === 0) { return alert("Tidak ada data untuk di-download."); }
-                
-                const csvData = currentData.map((row, index) => {
-                    const { rowNumber, 'Tanda Tangan Penerima': ttd, ...rest } = row;
-                    rest['No'] = index + 1;
-                    // === BARU: TAMBAHAN DATA CSV 'Satuan Barang' ===
-                    const orderedRow = {
-                        'No': rest['No'],
-                        'Nama Pegawai': rest['Nama Pegawai'],
-                        'Nip Pegawai': rest['Nip Pegawai'],
-                        'Nama Barang': rest['Nama Barang'],
-                        'Jumlah Barang': rest['Jumlah Barang'],
-                        'Satuan Barang': rest['Satuan Barang'], // <-- DITAMBAHKAN
-                        'Tanggal Pengambilan': rest['Tanggal Pengambilan'],
-                        'Waktu': rest['Waktu']
-                    };
-                    return orderedRow;
-                });
-                
-                const csv = Papa.unparse(csvData);
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a"); 
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", "laporan_pengambilan_barang.csv");
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+        const dlCsv = document.getElementById('downloadCsvBtn');
+        if(dlCsv) {
+            dlCsv.addEventListener('click', () => {
+                if(!currentData.length) return;
+                const csv = Papa.unparse(currentData.map((d,i)=>({
+                    No:i+1, Nama:d['Nama Pegawai'], NIP:d['Nip Pegawai'], Barang:d['Nama Barang'], 
+                    Jml:d['Jumlah Barang'], Satuan:d['Satuan Barang'], Tgl:d['Tanggal Pengambilan'], Waktu:d['Waktu']
+                })));
+                const b = new Blob([csv],{type:'text/csv'});
+                const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download='data.csv'; a.click();
             });
         }
     </script>
