@@ -6,12 +6,12 @@
     <title>Aplikasi Pengambilan Barang</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-        /* ... (CSS Anda tidak berubah) ... */
+        /* ... (CSS Anda yang sudah ada) ... */
         :root {
             --primary-color: #4f46e5; --primary-hover: #4338ca; --secondary-color: #64748b;
             --secondary-hover: #475569; --bg-gradient-start: #6a11cb; --bg-gradient-end: #2575fc;
@@ -170,6 +170,57 @@
         .tab-pane.active {
             display: block;
         }
+
+        /* === CSS BARU UNTUK PAGINATION (REVISI UKURAN) === */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem; /* Jarak antar tombol */
+            margin-top: 1.5rem;
+            padding-bottom: 1rem; 
+        }
+        .pagination-btn {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            
+            /* === REVISI UKURAN (KOTAK KECIL) === */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;  /* 36px */
+            height: 2.25rem; /* 36px */
+            padding: 0; 
+            font-size: 0.875rem; /* 14px */
+            line-height: 1; 
+            /* === AKHIR REVISI UKURAN === */
+
+            border-radius: 0.375rem; /* 6px */
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        /* Tombol Prev/Next bisa lebih lebar karena ada teks */
+        .pagination-btn.prev-next {
+            width: auto;
+            padding: 0.5rem 0.8rem; /* Kasih padding lagi */
+        }
+        .pagination-btn:hover {
+            background-color: #f1f5f9;
+        }
+        .pagination-btn.active {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-color: var(--primary-color);
+        }
+        .pagination-btn:disabled {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        /* === AKHIR CSS BARU === */
+
     </style>
 </head>
 <body>
@@ -328,7 +379,10 @@
                         </table>
                         <p id="table-status" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</p>
                     </div>
-                </div>
+                    
+                    <div class="pagination-container" id="pagination-controls">
+                        </div>
+                    </div>
 
                 <div id="tab3-monitoring" class="tab-pane">
                     <div class="settings-box" style="background-color: #fff; padding: 0;"> 
@@ -480,6 +534,12 @@
         // === STATE & UI HELPERS ===
         let currentData = [];
         let currentUser = null; 
+
+        // === VARIABEL BARU UNTUK PAGINATION ===
+        let currentPage = 1;
+        const rowsPerPage = 10; // Sesuai permintaan Anda (10 data per halaman)
+        // === AKHIR VARIABEL BARU ===
+        
         const loaderOverlay = document.getElementById('loader-overlay');
         function showLoading(isLoading) { loaderOverlay.classList.toggle('active', isLoading); }
         function showPage(pageId) {
@@ -668,24 +728,105 @@
         });
 
         // === DASHBOARD PENGAWAS: TAB 2 (LAPORAN BARANG) ===
+        // --- SELURUH BLOK INI DIMODIFIKASI UNTUK PAGINATION ---
         const tableBody = document.getElementById('dataTableBody');
         const tableStatus = document.getElementById('table-status');
+        const paginationControls = document.getElementById('pagination-controls'); // Ambil elemen pagination
+
+        // FUNGSI BARU UNTUK RENDER TOMBOL PAGINATION
+        function renderPagination() {
+            if (!paginationControls) return;
+            paginationControls.innerHTML = ''; // Kosongkan tombol sebelumnya
+            
+            // Hitung total halaman
+            const totalPages = Math.ceil(currentData.length / rowsPerPage);
+
+            // Jangan tampilkan pagination jika hanya ada 1 halaman atau tidak ada data
+            if (totalPages <= 1) return; 
+
+            // Tombol "Previous"
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '&laquo; Prev';
+            prevBtn.className = 'pagination-btn prev-next'; // <-- REVISI: Tambah kelas 'prev-next'
+            prevBtn.disabled = (currentPage === 1);
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayData(); // Panggil displayData untuk render ulang tabel
+                }
+            });
+            paginationControls.appendChild(prevBtn);
+
+            // Tombol Halaman (Contoh: 1, 2, 3)
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = 'pagination-btn'; // <-- Ini kelas untuk tombol angka
+                if (i === currentPage) {
+                    pageBtn.classList.add('active'); // Tandai halaman aktif
+                }
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i; // Set halaman saat ini
+                    displayData(); // Render ulang tabel
+                });
+                paginationControls.appendChild(pageBtn);
+            }
+
+            // Tombol "Next"
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = 'Next &raquo;';
+            nextBtn.className = 'pagination-btn prev-next'; // <-- REVISI: Tambah kelas 'prev-next'
+            nextBtn.disabled = (currentPage === totalPages);
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayData(); // Render ulang tabel
+                }
+            });
+            paginationControls.appendChild(nextBtn);
+        }
+
+        // MODIFIKASI: fetchDataPengawas
         async function fetchDataPengawas(url = WEB_APP_URL + '?action=readAll') {
             if (!tableStatus) return;
             tableStatus.textContent = 'Memuat data...';
             tableStatus.style.display = 'block';
             tableBody.innerHTML = '';
+            if (paginationControls) paginationControls.innerHTML = ''; // Kosongkan pagination saat loading
             try {
                 const res = await fetch(url);
                 const result = await res.json();
-                if (result.success) { currentData = result.data; displayData(currentData); } 
+                if (result.success) { 
+                    currentData = result.data; 
+                    currentPage = 1; // PENTING: Selalu reset ke halaman 1 setiap ada data baru
+                    displayData(); // MODIFIKASI: Panggil displayData tanpa argumen
+                } 
                 else { throw new Error(result.message); }
             } catch (e) { tableStatus.textContent = 'Gagal: ' + e.message; }
         }
-        function displayData(data) {
-            if (data.length === 0) { tableStatus.textContent = "Tidak ada data."; return; }
-            tableStatus.style.display = 'none';
-            data.forEach((item, idx) => {
+
+        // MODIFIKASI BESAR: displayData
+        function displayData() { // MODIFIKASI: Hapus parameter 'data'
+            tableBody.innerHTML = ''; // Selalu kosongkan tabel dulu
+
+            // Hitung data untuk halaman ini
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            
+            // Ambil data hanya untuk halaman saat ini menggunakan slice()
+            const paginatedData = currentData.slice(startIndex, endIndex);
+
+            if (currentData.length === 0) { // Cek dari data total
+                tableStatus.textContent = "Tidak ada data."; 
+                tableStatus.style.display = 'block';
+            } else {
+                tableStatus.style.display = 'none';
+            }
+            
+            // Render hanya data yang sudah dipaginasi
+            paginatedData.forEach((item, idx) => {
+                const itemNumber = startIndex + idx + 1; // Hitung nomor urut global
+                
                 const row = document.createElement('tr');
                 let sigHtml = 'No TTD';
                 if (item['Tanda Tangan Penerima'] && item['Tanda Tangan Penerima'].includes('drive.google.com')) {
@@ -695,7 +836,7 @@
                     } catch(e) {}
                 }
                 row.innerHTML = `
-                    <td>${idx + 1}</td><td>${item['Nama Pegawai']||''}</td><td>${item['Nip Pegawai']||''}</td>
+                    <td>${itemNumber}</td><td>${item['Nama Pegawai']||''}</td><td>${item['Nip Pegawai']||''}</td>
                     <td>${item['Nama Barang']||''}</td><td>${item['Jumlah Barang']||''}</td><td>${item['Satuan Barang']||''}</td>
                     <td>${item['Tanggal Pengambilan']||''}</td><td>${item['Waktu']||''}</td><td>${sigHtml}</td>
                     <td><div class="action-buttons">
@@ -704,7 +845,12 @@
                     </div></td>`;
                 tableBody.appendChild(row);
             });
+
+            // Panggil renderPagination di akhir
+            renderPagination();
         }
+
+        // --- Logika filter dan event listener (tidak berubah, tapi penting) ---
         if(document.getElementById('searchForm')) {
             document.getElementById('searchForm').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -757,6 +903,8 @@
                 if(result.success) { alert('Laporan terhapus'); fetchDataPengawas(); } else throw new Error(result.message);
             } catch(e) { alert(e.message); } finally { showLoading(false); }
         }
+        // --- AKHIR BLOK MODIFIKASI PAGINATION ---
+
 
         // === DASHBOARD PENGAWAS: TAB 3 (MANAJEMEN AKUN) ===
         const accountTableBody = document.getElementById('accountTableBody');
